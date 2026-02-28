@@ -1,6 +1,9 @@
 package org.example.model;
 
+import org.example.controler.Controller;
+
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Game {
     private List<Team> teams;
@@ -10,9 +13,12 @@ public class Game {
     private String turno;
     private int intentos;
     private long gameDurationSeconds;
+    private Controller controller;
 
-    public Game(List<Team> teams) {
+    public Game(Controller c, List<Team> teams) {
         this.teams = teams;
+        this.controller = c;
+
         determinePercentages();
         createScoreMap();
     }
@@ -87,10 +93,21 @@ public class Game {
     }
 
     private void endGame() {
-        System.out.println("Juego terminado");
-        System.out.println("Resultados finales:");
+        Map<String, String> resultGame = new HashMap<>();
+
         for(Map.Entry<String, Integer> entry : score.entrySet()) {
-            System.out.println("Equipo: " + entry.getKey() + " - Puntos: " + entry.getValue());
+            String teamName = entry.getKey();
+            String teamScore = String.valueOf(entry.getValue());
+
+            String playersNames = teams.stream()
+                    .filter(t -> t.getTeamName().equals(teamName))
+                    .flatMap(t -> t.getPlayers().stream())
+                    .map(Player::getName)
+                    .collect(Collectors.joining(", "));
+
+            resultGame.put(teamName, playersNames + ", " + teamScore);
         }
+
+        this.controller.notifyEndGame(resultGame);
     }
 }
