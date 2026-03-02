@@ -5,14 +5,51 @@ import org.example.model.connection.AccessFileConnection;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class ControlRAF {
     private final AccessFileConnection fileConnection;
     private final int RECORD_FILE = 600;
 
-    public ControlRAF(String filePath) {
-        this.fileConnection = new AccessFileConnection(filePath);
+    public ControlRAF(AccessFileConnection fileConnection) {
+        this.fileConnection = fileConnection;
+    }
+
+    /**
+     * Lee el archivo y devuelve las líneas donde el equipo ganó (W).
+     * @param teamName nombre del equipo a buscar
+     * @return List<String> con las líneas que coinciden
+     */
+    public List<String> readTeams(String teamName) {
+        try (RandomAccessFile file = fileConnection.read()) {
+            long fileLength = file.length();
+            if (fileLength == 0) return new ArrayList<>();
+
+            byte[] bytes = new byte[(int) fileLength];
+            file.readFully(bytes);
+            String content = new String(bytes, StandardCharsets.UTF_8);
+            String[] lines = content.split("\n");
+
+            List<String> teamLines = new ArrayList<>();
+
+            for (String team : lines) {
+                String trimmed = team.trim();
+                if (trimmed.isEmpty()) continue;
+
+                String[] parts = trimmed.split(",");
+                if (parts.length >= 3
+                        && parts[1].trim().equals(teamName)
+                        && parts[parts.length - 1].trim().equals("W")) {
+                    teamLines.add(trimmed);
+                }
+            }
+
+            return teamLines;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -20,18 +57,16 @@ public class ControlRAF {
      * @param resultGame Map con los resultados del juego
      */
     public void write(Map<String, String> resultGame) {
-        try (RandomAccessFile file = new RandomAccessFile("score.dat", "rw")) {
+        try (RandomAccessFile file = fileConnection.read()) {
             int currentKey = getLastKey(file) + 1;
 
             for (Map.Entry<String, String> entry : resultGame.entrySet()) {
                 String teamName = entry.getKey();
                 String teamResult = entry.getValue();
 
-                // Construir la línea completa con formato
                 String data = currentKey + "," + teamName + "," + teamResult;
                 String paddedRegister = padString(data, RECORD_FILE);
 
-                // Pasar al AccessFileConnection para escribir
                 fileConnection.write(paddedRegister);
             }
         } catch (IOException e) {
@@ -82,8 +117,7 @@ public class ControlRAF {
         String[] parts = lastRegister.split(",");
         if (parts.length > 0) {
             try {
-                String keyStr = parts[0].trim();
-                return Integer.parseInt(keyStr);
+                return Integer.parseInt(parts[0].trim());
             } catch (NumberFormatException e) {
                 return 0;
             }

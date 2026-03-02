@@ -1,8 +1,9 @@
 package org.example.model;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Team {
+public class Team implements Serializable {
 
     private String curriculumProject;
     private String teamName;

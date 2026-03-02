@@ -1,6 +1,8 @@
 package org.example.model;
 
-public class Player {
+import java.io.Serializable;
+
+public class Player implements Serializable {
     private String code;
     private String name;
 

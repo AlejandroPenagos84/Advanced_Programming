@@ -1,23 +1,23 @@
 package org.example.model;
 
-import org.example.controler.Controller;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Game {
-    private List<Team> teams;
-    private String winnerTeam;
+    private final List<Team> teams;
     private Map<String, Integer> score;
     private Map<BaleroOptions, Double> percentages;
     private String turno;
-    private int intentos;
+    private Integer[] attemptsPerTeam;
+    private Integer[] pointsPerTeam;
     private long gameDurationSeconds;
-    private Controller controller;
+    private final Suscriber suscriber;
 
-    public Game(Controller c, List<Team> teams) {
+    public Game(Suscriber s, List<Team> teams) {
         this.teams = teams;
-        this.controller = c;
+        this.suscriber = s;
+        this.attemptsPerTeam = new Integer[teams.size()];
+        this.pointsPerTeam = new Integer[teams.size()];
 
         determinePercentages();
         createScoreMap();
@@ -28,16 +28,18 @@ public class Game {
     }
 
     public void startGame() {
-        for(Team t: teams){
-            actionTeam(t);
+        for(int i = 0; i < teams.size(); i++){
+            actionTeam(teams.get(i), i);
         }
         endGame();
     }
 
-    private void actionTeam(Team team) {
+    private void actionTeam(Team team, int teamIndex) {
         turno = team.getTeamName();
-        for(Player p : team.getPlayers()){
-            intentos = 0;
+        List<Player> players = team.getPlayers();
+        Integer attempts = 0;
+        Integer points = 0;
+        for(int j = 0; j < players.size(); j++){
             long startSeconds = System.currentTimeMillis() / 1000L;
             long endSeconds = startSeconds + (gameDurationSeconds / teams.size());
             long nextTickSeconds = startSeconds;
@@ -48,17 +50,19 @@ public class Game {
                     BaleroOptions result = getRandomBaleroOption();
                     nextTickSeconds += 2;
                     score.put(turno, score.get(turno) + result.getPoints());
-                    intentos++;
-                    System.out.println("Resultado para el equipo " + team.getTeamName() + " y jugador " + p.getName() + ": " + result);
-                    System.out.println("Intentos: " + intentos);
+                    if(result.getPoints() > 0) attempts++;
+                    points += result.getPoints();
+                    suscriber.notifyTurnChange(teamIndex, j, result, score);
                 }
             }
         }
+        this.pointsPerTeam[teamIndex] = points;
+        this.attemptsPerTeam[teamIndex] = attempts;
     }
 
     private BaleroOptions getRandomBaleroOption() {
         Random random = new Random();
-        double randomValue = random.nextDouble(); // Genera número entre 0.0 y 1.0
+        double randomValue = random.nextDouble();
 
         double cumulativeProbability = 0.0;
 
@@ -94,6 +98,7 @@ public class Game {
 
     private void endGame() {
         Map<String, String> resultGame = new HashMap<>();
+        Map<String,String> winners = determinateWinner();
 
         for(Map.Entry<String, Integer> entry : score.entrySet()) {
             String teamName = entry.getKey();
@@ -104,10 +109,45 @@ public class Game {
                     .flatMap(t -> t.getPlayers().stream())
                     .map(Player::getName)
                     .collect(Collectors.joining(", "));
+            String result = winners.getOrDefault(teamName, "L");
 
-            resultGame.put(teamName, playersNames + ", " + teamScore);
+            resultGame.put(teamName, playersNames + ", " + teamScore + ", " + result);
+        }
+        this.suscriber.notifyEndGame(resultGame);
+    }
+
+    private Map<String,String> determinateWinner(){
+        List<Integer> listPoints = Arrays.stream(this.pointsPerTeam).toList();
+        int maxPoints = Collections.max(listPoints);
+
+        List<Integer> winners = new ArrayList<>();
+        for (int i = 0; i < listPoints.size(); i++) {
+            if (listPoints.get(i) == maxPoints) {
+                winners.add(i);
+            }
         }
 
-        this.controller.notifyEndGame(resultGame);
+        if(winners.size() > 1) {
+            int minAttempts = Integer.MAX_VALUE;
+            for (Integer index : winners) {
+                if (this.attemptsPerTeam[index] < minAttempts) {
+                    minAttempts = this.attemptsPerTeam[index];
+                }
+            }
+
+            List<Integer> finalWinners = new ArrayList<>();
+            for (Integer index : winners) {
+                if (attemptsPerTeam[index] == minAttempts) {
+                    finalWinners.add(index);
+                }
+            }
+            winners = finalWinners;
+        }
+
+        String result = winners.size() == 1 ? "W":"E";
+        return winners.stream().collect(Collectors.toMap(
+                index -> teams.get(index).getTeamName(),
+                index -> result
+        ));
     }
 }

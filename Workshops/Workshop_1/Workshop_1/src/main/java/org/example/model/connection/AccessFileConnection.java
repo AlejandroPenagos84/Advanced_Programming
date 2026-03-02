@@ -3,7 +3,7 @@ package org.example.model.connection;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-public class AccessFileConnection implements IWritter<String> {
+public class AccessFileConnection implements IWritter<String>, IReader<RandomAccessFile> {
     private final String filePath;
 
     public AccessFileConnection(String filePath){
@@ -21,6 +21,15 @@ public class AccessFileConnection implements IWritter<String> {
             file.seek(fileLength);
             file.writeBytes(data);
             file.writeBytes("\n");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public RandomAccessFile read() {
+        try {
+            return new RandomAccessFile(filePath, "rw");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

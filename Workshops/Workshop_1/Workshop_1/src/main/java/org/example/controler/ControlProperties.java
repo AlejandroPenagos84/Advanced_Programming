@@ -2,13 +2,12 @@ package org.example.controler;
 
 import org.example.model.Team;
 import org.example.model.Player;
-import org.example.model.connection.IReader;
 import org.example.model.connection.PropertiesConnection;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ControlProperties implements IReader<List<Team>> {
+public class ControlProperties {
     private final PropertiesConnection propertiesConnection;
 
     public ControlProperties(String filePath) {
@@ -19,7 +18,6 @@ public class ControlProperties implements IReader<List<Team>> {
      * Lee el archivo properties y devuelve una lista de equipos parseados
      * @return List<Team> con los equipos cargados desde el archivo properties
      */
-    @Override
     public List<Team> read() {
         Properties properties = propertiesConnection.read();
         return parseTeams(properties);
