@@ -46,16 +46,10 @@ public class FileSelectPanel extends JPanel {
         add(timeSpinner);
     }
 
-    /**
-     * Abre el diálogo del JFileChooser y retorna el archivo seleccionado,
-     * o null si el usuario canceló.
-     */
     public File openFileChooser() {
-        int result = fileChooser.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            return fileChooser.getSelectedFile();
-        }
-        return null;
+        return fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION
+                ? fileChooser.getSelectedFile()
+                : null;
     }
 
     public JFileChooser getFileChooser() {
@@ -70,10 +64,6 @@ public class FileSelectPanel extends JPanel {
         return preChargeButton;
     }
 
-    /**
-     * Obtiene el tiempo seleccionado en el spinner (mínimo 4 segundos).
-     * @return tiempo en segundos
-     */
     public int getSelectedTime() {
         return (int) timeSpinner.getValue();
     }
