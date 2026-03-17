@@ -1,5 +1,7 @@
 package org.example.model;
 
+import org.example.controler.BaleroOptions;
+
 import java.util.Map;
 
 public interface Suscriber {

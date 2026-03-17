@@ -6,13 +6,9 @@ public class SerializedFile implements IWritter<Object>, IReader<File> {
     private final String filePath;
 
     public SerializedFile(String filePath) {
-        this.filePath = filePath;
+        this.filePath = new File(filePath).getAbsolutePath();
     }
 
-    /**
-     * Serializa y escribe un objeto en el archivo
-     * @param data objeto a escribir
-     */
     @Override
     public void write(Object data) {
         try (FileOutputStream fos = new FileOutputStream(filePath);
@@ -23,10 +19,6 @@ public class SerializedFile implements IWritter<Object>, IReader<File> {
         }
     }
 
-    /**
-     * Devuelve el File asociado al archivo serializado
-     * @return File del archivo
-     */
     @Override
     public File read() {
         return new File(filePath);

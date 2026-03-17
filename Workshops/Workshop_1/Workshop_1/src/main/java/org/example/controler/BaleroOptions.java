@@ -1,4 +1,4 @@
-package org.example.model;
+package org.example.controler;
 
 public enum BaleroOptions {
     SIMPLE(2),

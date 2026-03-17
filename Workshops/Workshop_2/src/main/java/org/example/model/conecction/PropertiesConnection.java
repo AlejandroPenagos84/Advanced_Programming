@@ -1,4 +1,4 @@
-package org.example.model.connection;
+package org.example.model.conecction;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,6 +11,11 @@ public class PropertiesConnection implements IReader<Properties> {
         this.filePath = new File(filePath).getAbsolutePath();
     }
 
+    /**
+     * Lee y devuelve el archivo Properties sin parsear.
+     * Intenta primero desde el filesystem, si no existe busca en el classpath.
+     * @return Properties cargadas desde el archivo
+     */
     @Override
     public Properties read() {
         Properties properties = new Properties();

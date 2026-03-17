@@ -1,9 +1,13 @@
-package org.example.model;
+package org.example.controler;
+
+import org.example.model.Player;
+import org.example.model.Suscriber;
+import org.example.model.Team;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Game {
+public class ControlGame {
     private final List<Team> teams;
     private Map<String, Integer> score;
     private Map<BaleroOptions, Double> percentages;
@@ -13,7 +17,7 @@ public class Game {
     private long gameDurationSeconds;
     private final Suscriber suscriber;
 
-    public Game(Suscriber s, List<Team> teams) {
+    public ControlGame(Suscriber s, List<Team> teams) {
         this.teams = teams;
         this.suscriber = s;
         this.attemptsPerTeam = new Integer[teams.size()];
@@ -52,7 +56,7 @@ public class Game {
                     score.put(turno, score.get(turno) + result.getPoints());
                     if(result.getPoints() > 0) attempts++;
                     points += result.getPoints();
-                    suscriber.notifyTurnChange(teamIndex, j, result, score);
+                    suscriber.notifyTurnChange(teamIndex, j, result, Map.copyOf(score));
                 }
             }
         }

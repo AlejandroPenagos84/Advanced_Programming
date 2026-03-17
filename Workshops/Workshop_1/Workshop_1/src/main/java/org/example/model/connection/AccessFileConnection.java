@@ -1,5 +1,6 @@
 package org.example.model.connection;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -7,13 +8,9 @@ public class AccessFileConnection implements IWritter<String>, IReader<RandomAcc
     private final String filePath;
 
     public AccessFileConnection(String filePath){
-        this.filePath = filePath;
+        this.filePath = new File(filePath).getAbsolutePath();
     }
 
-    /**
-     * Escribe un string en el archivo
-     * @param data String a escribir en el archivo
-     */
     @Override
     public void write(String data) {
         try (RandomAccessFile file = new RandomAccessFile(filePath, "rw")) {

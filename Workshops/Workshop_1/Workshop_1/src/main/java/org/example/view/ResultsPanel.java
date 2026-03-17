@@ -4,179 +4,191 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Map;
 
-/**
- * Panel que muestra los resultados finales del juego.
- * Recibe un Map donde:
- *   - Key: nombre del equipo
- *   - Value: "jugador1, jugador2, puntaje, W/E/L"
- */
 public class ResultsPanel extends JPanel {
 
-    private static final Color WINNER_BG = new Color(34, 139, 34);
-    private static final Color TIE_BG = new Color(218, 165, 32);
-    private static final Color LOSER_BG = new Color(180, 60, 60);
-    private static final Color CARD_FG = Color.WHITE;
-    private JButton closeButton;
+    private static final Color BG          = new Color(0xFFF8F4);
+    private static final Color PANEL_BG    = Color.WHITE;
+    private static final Color ACCENT      = new Color(0xE07A5F);
+    private static final Color ACCENT_DARK = new Color(0xC05A3F);
+    private static final Color BORDER_COLOR= new Color(0xD4B8A8);
+    private static final Color WINNER_BG   = new Color(0x3A7D44);
+    private static final Color TIE_BG      = new Color(0xC8922A);
+    private static final Color LOSER_BG    = new Color(0xB43C3C);
+    private static final Color CARD_FG     = Color.WHITE;
+    private static final Color TITLE_FG    = new Color(0x2E2E2E);
+    private static final Color PREV_BG     = new Color(0xF5EDE8);
+    private static final Color PREV_FG     = new Color(0x9E7060);
+
+    private static final String FONT = "Segoe UI";
+
+    private final JButton closeButton;
 
     public ResultsPanel() {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        setBackground(new Color(245, 245, 245));
+        setBackground(BG);
 
-        closeButton = new JButton("Cerrar");
-        closeButton.setFont(new Font("SansSerif", Font.BOLD, 14));
-        closeButton.setFocusPainted(false);
-        closeButton.setBackground(new Color(70, 130, 180));
-        closeButton.setForeground(Color.WHITE);
-        closeButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        closeButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        closeButton = buildCloseButton();
 
-        add(createTitle(), BorderLayout.NORTH);
-        add(closeButton, BorderLayout.SOUTH);
+        add(buildTitle(),   BorderLayout.NORTH);
+        add(closeButton,    BorderLayout.SOUTH);
     }
 
-    /**
-     * Carga los resultados del juego y los muestra en el panel.
-     * @param resultGame Map con los resultados del juego
-     * @param previousResult String con victorias anteriores
-     */
+    private JButton buildCloseButton() {
+        JButton btn = new JButton("Cerrar");
+        btn.setFont(new Font(FONT, Font.BOLD, 14));
+        btn.setForeground(CARD_FG);
+        btn.setBackground(ACCENT);
+        btn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ACCENT_DARK, 1),
+                BorderFactory.createEmptyBorder(10, 20, 10, 20)
+        ));
+        btn.setFocusPainted(false);
+        btn.setOpaque(true);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        return btn;
+    }
+
+    private JLabel buildTitle() {
+        JLabel lbl = new JLabel("Resultados Finales", SwingConstants.CENTER);
+        lbl.setFont(new Font(FONT, Font.BOLD, 20));
+        lbl.setForeground(TITLE_FG);
+        lbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
+        return lbl;
+    }
+
     public void setResults(Map<String, String> resultGame, String previousResult) {
-        add(createCardsContainer(resultGame), BorderLayout.CENTER);
+        add(buildCardsContainer(resultGame), BorderLayout.CENTER);
 
         if (previousResult != null && !previousResult.isEmpty()) {
             remove(closeButton);
-            JPanel southPanel = new JPanel();
-            southPanel.setLayout(new BoxLayout(southPanel, BoxLayout.Y_AXIS));
-            southPanel.setOpaque(false);
-            southPanel.add(createPreviousResultsPanel(previousResult));
-            southPanel.add(Box.createVerticalStrut(10));
-            southPanel.add(closeButton);
-            add(southPanel, BorderLayout.SOUTH);
+            JPanel south = new JPanel();
+            south.setLayout(new BoxLayout(south, BoxLayout.Y_AXIS));
+            south.setOpaque(false);
+            south.add(buildPreviousResultsPanel(previousResult));
+            south.add(Box.createVerticalStrut(10));
+            south.add(closeButton);
+            add(south, BorderLayout.SOUTH);
         }
 
         revalidate();
         repaint();
     }
 
-
-    private JLabel createTitle() {
-        JLabel titleLabel = new JLabel("Resultados Finales", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 20));
-        titleLabel.setForeground(new Color(50, 50, 50));
-        titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
-        return titleLabel;
-    }
-
-    private JPanel createCardsContainer(Map<String, String> resultGame) {
-        JPanel cardsContainer = new JPanel(new GridLayout(1, resultGame.size(), 15, 0));
-        cardsContainer.setOpaque(false);
+    private JPanel buildCardsContainer(Map<String, String> resultGame) {
+        JPanel container = new JPanel(new GridLayout(1, resultGame.size(), 15, 0));
+        container.setOpaque(false);
 
         for (Map.Entry<String, String> entry : resultGame.entrySet()) {
-            String teamName = entry.getKey();
-            String value = entry.getValue();
-
-            String[] parts = value.split(",");
-            String resultFlag = parts[parts.length - 1].trim();
-            String score = parts[parts.length - 2].trim();
-            StringBuilder playersBuilder = new StringBuilder();
-            for (int i = 0; i < parts.length - 2; i++) {
-                if (i > 0) playersBuilder.append(", ");
-                playersBuilder.append(parts[i].trim());
-            }
-            String players = playersBuilder.toString();
-
-            cardsContainer.add(createTeamResultCard(teamName, players, score, resultFlag));
+            String[] parts      = entry.getValue().split(",");
+            String resultFlag   = parts[parts.length - 1].trim();
+            String score        = parts[parts.length - 2].trim();
+            String players      = buildPlayerList(parts);
+            container.add(buildTeamResultCard(entry.getKey(), players, score, resultFlag));
         }
 
-        return cardsContainer;
+        return container;
     }
 
-    private JPanel createPreviousResultsPanel(String previousResult) {
-        JPanel previousPanel = new JPanel();
-        previousPanel.setLayout(new BoxLayout(previousPanel, BoxLayout.Y_AXIS));
-        previousPanel.setBackground(new Color(245, 245, 245));
-        previousPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
-
-        JLabel prevTitle = new JLabel("Victorias anteriores", SwingConstants.CENTER);
-        prevTitle.setFont(new Font("SansSerif", Font.BOLD, 12));
-        prevTitle.setForeground(new Color(100, 100, 100));
-        prevTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
-        previousPanel.add(prevTitle);
-        previousPanel.add(Box.createVerticalStrut(4));
-
-        JTextArea prevText = new JTextArea(previousResult);
-        prevText.setEditable(false);
-        prevText.setFont(new Font("Monospaced", Font.PLAIN, 10));
-        prevText.setBackground(new Color(235, 235, 235));
-        prevText.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-
-        JScrollPane scrollPane = new JScrollPane(prevText);
-        scrollPane.setPreferredSize(new Dimension(0, 60));
-        scrollPane.setAlignmentX(Component.CENTER_ALIGNMENT);
-        previousPanel.add(scrollPane);
-
-        return previousPanel;
-    }
-
-    private JPanel createTeamResultCard(String teamName, String players, String score, String resultFlag) {
-        Color bgColor;
-        String resultText;
-
-        switch (resultFlag) {
-            case "W":
-                bgColor = WINNER_BG;
-                resultText = "GANADOR";
-                break;
-            case "E":
-                bgColor = TIE_BG;
-                resultText = "EMPATE";
-                break;
-            default:
-                bgColor = LOSER_BG;
-                resultText = "PERDEDOR";
-                break;
+    private String buildPlayerList(String[] parts) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < parts.length - 2; i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(parts[i].trim());
         }
+        return sb.toString();
+    }
+
+    private JPanel buildPreviousResultsPanel(String previousResult) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(PREV_BG);
+        panel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
+
+        JLabel title = new JLabel("Victorias anteriores", SwingConstants.CENTER);
+        title.setFont(new Font(FONT, Font.BOLD, 12));
+        title.setForeground(PREV_FG);
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JTextArea text = new JTextArea(previousResult);
+        text.setEditable(false);
+        text.setFont(new Font("Monospaced", Font.PLAIN, 10));
+        text.setBackground(new Color(0xF0E0D8));
+        text.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        JScrollPane scroll = new JScrollPane(text);
+        scroll.setPreferredSize(new Dimension(0, 60));
+        scroll.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        panel.add(title);
+        panel.add(Box.createVerticalStrut(4));
+        panel.add(scroll);
+        return panel;
+    }
+
+    private JPanel buildTeamResultCard(String teamName, String players, String score, String resultFlag) {
+        Color bg         = resolveResultColor(resultFlag);
+        String resultText= resolveResultText(resultFlag);
 
         JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBackground(bgColor);
+        card.setBackground(bg);
         card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(bgColor.darker(), 2, true),
+                BorderFactory.createLineBorder(bg.darker(), 2, true),
                 BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
 
-        JLabel resultLabel = new JLabel(resultText, SwingConstants.CENTER);
-        resultLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
-        resultLabel.setForeground(CARD_FG);
-        resultLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        card.add(resultLabel);
+        card.add(cardLabel(resultText, Font.BOLD,  18));
         card.add(Box.createVerticalStrut(10));
-
-        JLabel nameLabel = new JLabel(teamName, SwingConstants.CENTER);
-        nameLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
-        nameLabel.setForeground(CARD_FG);
-        nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        card.add(nameLabel);
+        card.add(cardLabel(teamName,   Font.BOLD,  16));
         card.add(Box.createVerticalStrut(10));
-
-        JLabel scoreLabel = new JLabel("Puntaje: " + score, SwingConstants.CENTER);
-        scoreLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        scoreLabel.setForeground(CARD_FG);
-        scoreLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        card.add(scoreLabel);
+        card.add(cardLabel("Puntaje: " + score, Font.PLAIN, 14));
         card.add(Box.createVerticalStrut(10));
-
-        JLabel playersLabel = new JLabel("<html><center>Jugadores:<br>" + players.replace(", ", "<br>") + "</center></html>", SwingConstants.CENTER);
-        playersLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        playersLabel.setForeground(CARD_FG);
-        playersLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        card.add(playersLabel);
+        card.add(buildPlayersPanel(players));
 
         return card;
     }
 
-    public JButton getCloseButton() {
-        return closeButton;
-    }
-}
+    private JPanel buildPlayersPanel(String players) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setOpaque(false);
 
+        JLabel title = cardLabel("Jugadores:", Font.BOLD, 12);
+        panel.add(title);
+        panel.add(Box.createVerticalStrut(4));
+
+        for (String player : players.split(",")) {
+            panel.add(cardLabel(player.trim(), Font.PLAIN, 12));
+        }
+
+        return panel;
+    }
+
+    private JLabel cardLabel(String text, int style, int size) {
+        JLabel lbl = new JLabel(text, SwingConstants.CENTER);
+        lbl.setFont(new Font(FONT, style, size));
+        lbl.setForeground(CARD_FG);
+        lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
+        return lbl;
+    }
+
+    private Color resolveResultColor(String flag) {
+        return switch (flag) {
+            case "W" -> WINNER_BG;
+            case "E" -> TIE_BG;
+            default  -> LOSER_BG;
+        };
+    }
+
+    private String resolveResultText(String flag) {
+        return switch (flag) {
+            case "W" -> "GANADOR";
+            case "E" -> "EMPATE";
+            default  -> "PERDEDOR";
+        };
+    }
+
+    public JButton getCloseButton() { return closeButton; }
+}

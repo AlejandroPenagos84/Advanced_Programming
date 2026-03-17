@@ -37,7 +37,9 @@ public class FileSelectPanel extends JPanel {
         timeSpinner.setFont(new Font("SansSerif", Font.PLAIN, 14));
         timeSpinner.setPreferredSize(new Dimension(70, 30));
 
-        fileChooser = new JFileChooser();
+        fileChooser = new JFileChooser(
+                new File(System.getProperty("user.dir"))
+        );
         fileChooser.setDialogTitle("Seleccionar archivo de datos");
 
         add(loadButton);
@@ -56,10 +58,6 @@ public class FileSelectPanel extends JPanel {
             return fileChooser.getSelectedFile();
         }
         return null;
-    }
-
-    public JFileChooser getFileChooser() {
-        return fileChooser;
     }
 
     public JButton getLoadButton() {

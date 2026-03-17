@@ -5,15 +5,20 @@ import java.awt.*;
 import java.io.File;
 import java.util.Map;
 
-/**
- * Vista principal del juego de Balero.
- */
 public class PrincipalView extends JFrame {
 
-    private GridPlayers gridPlayers;
+    private static final Color BG       = new Color(0xFFF8F4);
+    private static final Color ACCENT   = new Color(0xE07A5F);
+    private static final Color ACCENT_DARK = new Color(0xC05A3F);
+    private static final Color TITLE_FG = new Color(0x2E2E2E);
+    private static final Color BTN_BG   = new Color(0xF5EDE8);
+
+    private static final String FONT = "Segoe UI";
+
+    private GridPlayers        gridPlayers;
     private final FileSelectPanel fileSelectPanel;
-    private final JButton startGameButton;
-    private ResultsPanel resultsPanel;
+    private final JButton         startGameButton;
+    private final ResultsPanel    resultsPanel;
 
     public PrincipalView() {
         setTitle("Juego de Balero - Workshop 1");
@@ -21,71 +26,49 @@ public class PrincipalView extends JFrame {
         setSize(800, 600);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
+        getContentPane().setBackground(BG);
 
-        JLabel title = new JLabel("Juego de Balero", SwingConstants.CENTER);
-        title.setFont(new Font("SansSerif", Font.BOLD, 22));
-        title.setBorder(BorderFactory.createEmptyBorder(15, 0, 10, 0));
-        title.setForeground(new Color(50, 50, 50));
-        add(title, BorderLayout.NORTH);
+        startGameButton = buildStartButton();
+        resultsPanel    = new ResultsPanel();
 
-        fileSelectPanel = new FileSelectPanel();
-        add(fileSelectPanel, BorderLayout.CENTER);
-
-        startGameButton = new JButton("Iniciar Juego");
-        startGameButton.setFont(new Font("SansSerif", Font.BOLD, 16));
-        startGameButton.setFocusPainted(false);
-        startGameButton.setBackground(new Color(34, 139, 34));
-        startGameButton.setForeground(Color.WHITE);
-        startGameButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        startGameButton.setEnabled(false);
-
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        buttonPanel.setBackground(new Color(245, 245, 245));
-        buttonPanel.add(startGameButton);
-        add(buttonPanel, BorderLayout.SOUTH);
-
-        resultsPanel = new ResultsPanel();
+        add(buildTitle(),                            BorderLayout.NORTH);
+        add(fileSelectPanel = new FileSelectPanel(), BorderLayout.CENTER);
+        add(buildButtonPanel(),                      BorderLayout.SOUTH);
 
         setVisible(true);
     }
 
-    /**
-     * Delega la actualización de estados a la grilla internamente.
-     */
-    public void updateActiveState(boolean[] activeTeams, boolean[][] activePlayers, String lastResult, String[] scores) {
-        gridPlayers.updateActiveState(activeTeams, activePlayers, lastResult, scores);
+    private JLabel buildTitle() {
+        JLabel lbl = new JLabel("Juego de Balero", SwingConstants.CENTER);
+        lbl.setFont(new Font(FONT, Font.BOLD, 22));
+        lbl.setForeground(TITLE_FG);
+        lbl.setBorder(BorderFactory.createEmptyBorder(15, 0, 10, 0));
+        return lbl;
     }
 
-    public JButton getLoadButton() {
-        return fileSelectPanel.getLoadButton();
+    private JButton buildStartButton() {
+        JButton btn = new JButton("Iniciar Juego");
+        btn.setFont(new Font(FONT, Font.BOLD, 16));
+        btn.setForeground(Color.WHITE);
+        btn.setBackground(ACCENT);
+        btn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ACCENT_DARK, 1),
+                BorderFactory.createEmptyBorder(10, 20, 10, 20)
+        ));
+        btn.setFocusPainted(false);
+        btn.setOpaque(true);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btn.setEnabled(false);
+        return btn;
     }
 
-    public JButton getStartGameButton() {
-        return startGameButton;
+    private JPanel buildButtonPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        panel.setBackground(BTN_BG);
+        panel.add(startGameButton);
+        return panel;
     }
 
-    public JButton getPreChargeButton() {
-        return fileSelectPanel.getPreChargeButton();
-    }
-
-    public int getSelectedTime() {
-        return fileSelectPanel.getSelectedTime();
-    }
-
-    public JButton getCloseButton() {
-        return this.resultsPanel.getCloseButton();
-    }
-    /**
-     * Abre el JFileChooser y retorna el archivo seleccionado, o null si se canceló.
-     */
-    public File openFileChooser() {
-        return fileSelectPanel.openFileChooser();
-    }
-
-    /**
-     * Reemplaza el panel de selección de archivo por la grilla del juego.
-     * @param data datos String[][][] para construir la grilla
-     */
     public void showGameGrid(String[][][] data) {
         remove(fileSelectPanel);
         gridPlayers = new GridPlayers(data);
@@ -95,20 +78,26 @@ public class PrincipalView extends JFrame {
         repaint();
     }
 
-    /**
-     * Reemplaza la grilla por el panel de resultados finales.
-     * @param resultGame Map con los resultados del juego
-     * @param previousResult String con las victorias anteriores del equipo ganador
-     */
     public void showResults(Map<String, String> resultGame, String previousResult) {
         SwingUtilities.invokeLater(() -> {
-            if (gridPlayers != null) {
-                remove(gridPlayers);
-            }
-            this.resultsPanel.setResults(resultGame, previousResult);
+            if (gridPlayers != null) remove(gridPlayers);
+            resultsPanel.setResults(resultGame, previousResult);
             add(resultsPanel, BorderLayout.CENTER);
             revalidate();
             repaint();
         });
     }
+
+    public void updateActiveState(boolean[] activeTeams, boolean[][] activePlayers, String lastResult, String[] scores) {
+        SwingUtilities.invokeLater(() ->
+                gridPlayers.updateActiveState(activeTeams, activePlayers, lastResult, scores)
+        );
+    }
+
+    public File    openFileChooser()   { return fileSelectPanel.openFileChooser();      }
+    public int     getSelectedTime()   { return fileSelectPanel.getSelectedTime();      }
+    public JButton getLoadButton()     { return fileSelectPanel.getLoadButton();        }
+    public JButton getPreChargeButton(){ return fileSelectPanel.getPreChargeButton();   }
+    public JButton getStartGameButton(){ return startGameButton;                        }
+    public JButton getCloseButton()    { return resultsPanel.getCloseButton();          }
 }
