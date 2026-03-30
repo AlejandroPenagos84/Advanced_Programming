@@ -11,7 +11,7 @@ public class Controller {
     private MinipigDAO minipigDAO;
     private MinipigMapper minipigMapper;
     private FileManager fileManager;
-    private ControlView controlView;
+    private ControlViewSwing controlView;
 
     public Controller() {
         this.minipigMapper = new MinipigMapper();
@@ -22,7 +22,7 @@ public class Controller {
 
     private void initializeDAO() {
         String[] dbConfig = fileManager.getDatabaseConfig();
-        this.minipigDAO = new MinipigImplDAO(dbConfig[0], dbConfig[1], dbConfig[2], minipigMapper);
+        this.minipigDAO = new MinipigImplDAO(dbConfig[0], dbConfig[1], dbConfig[2], dbConfig[3], minipigMapper);
     }
 
     public Map<String, Object> findByCode(String code) {

@@ -8,7 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-public class ControlViewSwing implements ActionListener, ControlView {
+public class ControlViewSwing implements ActionListener{
 
     private final ViewManager viewManager;
     private final Controller  controller;
@@ -107,44 +107,37 @@ public class ControlViewSwing implements ActionListener, ControlView {
         }
     }
 
-    @Override
-    public void showSingleMinipig(String code) {
+    private void showSingleMinipig(String code) {
         Map<String, Object> data = this.controller.findByCode(code);
         this.viewManager.showDetail(data);
     }
 
-    @Override
-    public void addRow(Map<String, Object> data) {
+    private void addRow(Map<String, Object> data) {
         this.viewManager.addRow(data, this);
     }
 
-    @Override
-    public void addMinipig(Map<String, Object> data) {
+    private void addMinipig(Map<String, Object> data) {
         this.controller.save(data);
         this.viewManager.addRow(data, this);
     }
 
-    @Override
-    public void showAllMiniPig() {
+    private void showAllMiniPig() {
         this.viewManager.clearRows();
         this.controller.findAll().forEach(this::addRow);
         this.viewManager.showList();
     }
 
-    @Override
-    public void showMiniPigByCriteria(String parameter, String value) {
+    private void showMiniPigByCriteria(String parameter, String value) {
         this.viewManager.clearRows();
         this.controller.findByParameter(parameter, value).forEach(this::addRow);
         this.viewManager.showList();
     }
 
-    @Override
-    public void openFormToCreate() {
+    private void openFormToCreate() {
         this.viewManager.showFormToCreate();
     }
 
-    @Override
-    public void openFormToModify(String code) {
+    private void openFormToModify(String code) {
         Map<String, Object> data = this.controller.findByCode(code);
         this.viewManager.showFormToModify(data);
     }

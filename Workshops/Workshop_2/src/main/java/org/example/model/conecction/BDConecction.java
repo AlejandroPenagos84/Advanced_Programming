@@ -6,19 +6,13 @@ import java.sql.SQLException;
 
 public class BDConecction {
 
-    static {
+    public static Connection getConnection(String driverUrl, String url, String user, String password) throws SQLException {
         try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("PostgreSQL Driver not found", e);
-        }
-    }
-
-    public static Connection getConnection(String url, String user, String password) throws SQLException {
-        try {
+            System.out.println("driverUrl: " + driverUrl);
+            Class.forName(driverUrl);
             return DriverManager.getConnection(url, user, password);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error connecting to database: " + e.getMessage(), e);
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException("Database connection failed: " + e.getMessage(), e);
         }
     }
 }

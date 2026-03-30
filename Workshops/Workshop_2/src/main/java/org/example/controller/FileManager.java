@@ -11,9 +11,10 @@ public class FileManager {
 
     public String[] getDatabaseConfig() {
         var properties = propertiesConnection.read();
+        String driver = properties.getProperty("db.driver");
         String url = properties.getProperty("db.url");
         String user = properties.getProperty("db.user");
         String password = properties.getProperty("db.password");
-        return new String[]{url, user, password};
+        return new String[]{driver,url, user, password};
     }
 }

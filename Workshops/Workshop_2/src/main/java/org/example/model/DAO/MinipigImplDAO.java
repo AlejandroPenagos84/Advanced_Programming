@@ -13,19 +13,21 @@ public class MinipigImplDAO implements MinipigDAO {
     private final String url;
     private final String user;
     private final String password;
+    private final String driver;
     private final MinipigMapper minipigMapper;
 
-    public MinipigImplDAO(String url, String user, String password, MinipigMapper minipigMapper) {
+    public MinipigImplDAO(String driver,String url, String user, String password, MinipigMapper minipigMapper) {
         this.url = url;
         this.user = user;
         this.password = password;
+        this.driver = driver;
         this.minipigMapper = minipigMapper;
     }
 
     @Override
     public Minipig findByCode(String code) {
         String query = "SELECT * FROM minipig WHERE code = ?";
-        try (Connection cn = BDConecction.getConnection(url, user, password);
+        try (Connection cn = BDConecction.getConnection(driver,url, user, password);
              PreparedStatement stm = cn.prepareStatement(query)) {
 
             stm.setString(1, code);
@@ -44,7 +46,7 @@ public class MinipigImplDAO implements MinipigDAO {
     @Override
     public List<Minipig> findAll() {
         String query = "SELECT * FROM minipig";
-        try (Connection cn = BDConecction.getConnection(url, user, password);
+        try (Connection cn = BDConecction.getConnection(driver,url, user, password);
              Statement stm = cn.createStatement();
              ResultSet resultSet = stm.executeQuery(query)) {
 
@@ -61,17 +63,15 @@ public class MinipigImplDAO implements MinipigDAO {
 
     @Override
     public List<Minipig> findByParameter(String parameter, String value) {
-        // Whitelist de columnas permitidas — evita SQL injection
         List<String> allowedColumns = List.of("code", "microchipId", "name", "race", "gender");
 
         if (!allowedColumns.contains(parameter)) {
             throw new IllegalArgumentException("Columna no permitida: " + parameter);
         }
 
-        // El nombre de columna va directo en el string, el valor se parametriza
         String query = "SELECT * FROM minipig WHERE " + parameter + " LIKE '%' || ? || '%'";
 
-        try (Connection cn = BDConecction.getConnection(url, user, password);
+        try (Connection cn = BDConecction.getConnection(driver,url, user, password);
              PreparedStatement stm = cn.prepareStatement(query)) {
 
             stm.setString(1, value);
@@ -93,7 +93,7 @@ public class MinipigImplDAO implements MinipigDAO {
     public void save(Minipig minipig) {
         String query = "INSERT INTO minipig (code, name, gender, microchipId, race, color, weight, height, characteristic1, characteristic2, photoUrl) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection cn = BDConecction.getConnection(url, user, password);
+        try (Connection cn = BDConecction.getConnection(driver,url, user, password);
              PreparedStatement stm = cn.prepareStatement(query)) {
 
             stm.setString(1, minipig.getCode());
@@ -117,7 +117,7 @@ public class MinipigImplDAO implements MinipigDAO {
     public void update(Minipig minipig) {
         String query = "UPDATE minipig SET name = ?, gender = ?, microchipId = ?, race = ?, color = ?, weight = ?, height = ?, characteristic1 = ?, characteristic2 = ?, photoUrl = ? " +
                 "WHERE code = ?";
-        try (Connection cn = BDConecction.getConnection(url, user, password);
+        try (Connection cn = BDConecction.getConnection(driver,url, user, password);
              PreparedStatement stm = cn.prepareStatement(query)) {
 
             System.out.println(minipig.getPhotoUrl());
@@ -141,7 +141,7 @@ public class MinipigImplDAO implements MinipigDAO {
     @Override
     public void deleteByCode(String code) {
         String query = "DELETE FROM minipig WHERE code = ?";
-        try (Connection cn = BDConecction.getConnection(url, user, password);
+        try (Connection cn = BDConecction.getConnection(driver,url, user, password);
              PreparedStatement stm = cn.prepareStatement(query)) {
 
             stm.setString(1, code);
@@ -154,7 +154,7 @@ public class MinipigImplDAO implements MinipigDAO {
     @Override
     public void deleteByMicrochipId(String microchipId) {
         String query = "DELETE FROM minipig WHERE microchipId = ?";
-        try (Connection cn = BDConecction.getConnection(url, user, password);
+        try (Connection cn = BDConecction.getConnection(driver,url, user, password);
              PreparedStatement stm = cn.prepareStatement(query)) {
 
             stm.setString(1, microchipId);
